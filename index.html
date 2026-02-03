@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Be My Valentine?</title>
+  <style>
+    :root { --btnW: 150px; --btnH: 52px; }
+    body{
+      margin:0; height:100vh; display:flex; align-items:center; justify-content:center;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(circle at top, #ffe6f0, #fff);
+      overflow:hidden;
+    }
+    .card{
+      width:min(720px, 92vw);
+      background:#ffffffcc;
+      border:1px solid #ffd1e1;
+      box-shadow: 0 12px 40px rgba(0,0,0,.08);
+      border-radius: 24px;
+      padding: 28px;
+      text-align:center;
+      backdrop-filter: blur(6px);
+      position: relative;
+    }
+    h1{ margin: 0 0 10px; font-size: clamp(28px, 4vw, 44px); }
+    p{ margin: 0 0 22px; font-size: 18px; opacity:.85; }
+    .btnRow{
+      display:flex; gap:14px; justify-content:center; flex-wrap:wrap;
+      margin-top: 10px;
+    }
+    button{
+      width: var(--btnW); height: var(--btnH);
+      border-radius: 999px; border:0; cursor:pointer;
+      font-size: 18px; font-weight: 700;
+      box-shadow: 0 10px 22px rgba(0,0,0,.10);
+      transition: transform .12s ease, filter .12s ease;
+      user-select:none;
+    }
+    button:active{ transform: scale(.98); }
+    #yesBtn{ background: #ff4d88; color:white; }
+    #yesBtn:hover{ filter: brightness(1.05); transform: translateY(-1px); }
+    #noBtn{
+      background: #2b2b2b; color: #fff;
+      position: fixed; /* so it can run away anywhere */
+      left: 50%; top: 50%;
+      transform: translate(-50%, 80px);
+    }
+    .memeWrap{
+      display:none;
+      margin-top: 16px;
+      text-align:center;
+    }
+    .meme{
+      width:min(520px, 92%);
+      border-radius: 18px;
+      border: 1px solid #ffd1e1;
+      box-shadow: 0 12px 30px rgba(0,0,0,.12);
+    }
+    .small{
+      margin-top: 14px;
+      font-size: 14px;
+      opacity: .7;
+    }
+  </style>
+</head>
+<body>
+  <div class="card" id="card">
+    <div id="questionView">
+      <h1>Will you be my Valentine? 💘</h1>
+      <p>Choose wisely. (No pressure. Except… a little.)</p>
+
+      <div class="btnRow">
+        <button id="yesBtn">Yes</button>
+      </div>
+
+      <div class="small">Try clicking “No” if you dare.</div>
+    </div>
+
+    <div class="memeWrap" id="yesView" aria-hidden="true">
+      <h1>LET’S GOOOOOOOO 😭❤️</h1>
+      <p>I’m officially the luckiest person alive.</p>
+
+      <!-- Option A: use a local meme image by adding it to the repo and naming it meme.jpg -->
+      <!-- <img class="meme" src="meme.jpg" alt="Happy meme" /> -->
+
+      <!-- Option B: use a GIF link (replace with your favorite) -->
+      <img class="meme"
+           src="https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif"
+           alt="Happy dance meme" />
+
+      <p class="small">Screenshot this moment for evidence.</p>
+    </div>
+  </div>
+
+  <button id="noBtn" aria-label="No button">No ☹️</button>
+
+  <script>
+    const yesBtn = document.getElementById('yesBtn');
+    const noBtn  = document.getElementById('noBtn');
+    const questionView = document.getElementById('questionView');
+    const yesView = document.getElementById('yesView');
+
+    // --- Helper: clamp
+    const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+
+    // --- Place "No" somewhere valid on first load
+    function placeNoInitial(){
+      const pad = 16;
+      const w = noBtn.offsetWidth || 150;
+      const h = noBtn.offsetHeight || 52;
+
+      const x = (window.innerWidth / 2) - (w / 2);
+      const y = (window.innerHeight / 2) + 80;
+
+      noBtn.style.left = clamp(x, pad, window.innerWidth - w - pad) + 'px';
+      noBtn.style.top  = clamp(y, pad, window.innerHeight - h - pad) + 'px';
+    }
+
+    // --- Make it run away when cursor gets close
+    function runAway(mouseX, mouseY){
+      const rect = noBtn.getBoundingClientRect();
+      const btnCX = rect.left + rect.width / 2;
+      const btnCY = rect.top  + rect.height / 2;
+
+      const dx = btnCX - mouseX;
+      const dy = btnCY - mouseY;
+      const dist = Math.hypot(dx, dy);
+
+      const triggerDistance = 140; // how close before it flees
+      if (dist > triggerDistance) return;
+
+      // Move away in the opposite direction + some randomness
+      const flee = 220;
+      let nx = rect.left + (dx / (dist || 1)) * flee + (Math.random() - 0.5) * 120;
+      let ny = rect.top  + (dy / (dist || 1)) * flee + (Math.random() - 0.5) * 120;
+
+      const pad = 16;
+      nx = clamp(nx, pad, window.innerWidth  - rect.width  - pad);
+      ny = clamp(ny, pad, window.innerHeight - rect.height - pad);
+
+      noBtn.style.left = nx + 'px';
+      noBtn.style.top  = ny + 'px';
+    }
+
+    // Prevent clicks via touch too (it will jump on touchstart)
+    noBtn.addEventListener('mouseenter', (e) => runAway(e.clientX, e.clientY));
+    window.addEventListener('mousemove', (e) => runAway(e.clientX, e.clientY), { passive: true });
+    noBtn.addEventListener('touchstart', (e) => {
+      const t = e.touches[0];
+      runAway(t.clientX, t.clientY);
+      e.preventDefault();
+    }, { passive: false });
+
+    // Just in case it gets clicked (keyboard, etc.), also dodge:
+    noBtn.addEventListener('click', (e) => {
+      runAway(window.innerWidth * Math.random(), window.innerHeight * Math.random());
+      e.preventDefault();
+    });
+
+    // YES click => switch the whole view
+    yesBtn.addEventListener('click', () => {
+      questionView.style.display = 'none';
+      yesView.style.display = 'block';
+      yesView.setAttribute('aria-hidden', 'false');
+      noBtn.style.display = 'none';
+      document.title = "SHE SAID YES ❤️";
+    });
+
+    window.addEventListener('resize', placeNoInitial);
+    placeNoInitial();
+  </script>
+</body>
+</html>
