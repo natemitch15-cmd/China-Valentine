@@ -1,140 +1,218 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Be My Valentine?</title>
-    <style>
-    :root { --btnW: 150px; --btnH: 52px; }
+
+  <style>
+    :root{
+      --bg1:#ffdde1;
+      --bg2:#ee9ca7;
+      --card:rgba(255,255,255,0.88);
+      --text:#2b2b2b;
+      --yes:#22c55e;
+      --no:#ef4444;
+    }
+
+    *{ box-sizing:border-box; }
+
     body{
-      margin:0; height:100vh; display:flex; align-items:center; justify-content:center;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background: radial-gradient(circle at top, #ffe6f0, #fff);
+      margin:0;
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:radial-gradient(circle at 20% 20%, var(--bg1), var(--bg2));
+      color:var(--text);
       overflow:hidden;
     }
+
     .card{
-      width:min(720px, 92vw);
-      background:#ffffffcc;
-      border:1px solid #ffd1e1;
-      box-shadow: 0 12px 40px rgba(0,0,0,.08);
-      border-radius: 24px;
-      padding: 28px;
-      text-align:center;
-      backdrop-filter: blur(6px);
-      position: relative;
+      width:min(760px, 92vw);
+      padding:24px;
+      border-radius:22px;
+      background:var(--card);
+      backdrop-filter: blur(8px);
+      box-shadow:0 16px 40px rgba(0,0,0,0.15);
+      position:relative;
     }
-    h1{ margin: 0 0 10px; font-size: clamp(28px, 4vw, 44px); }
-    p{ margin: 0 0 22px; font-size: 18px; opacity:.85; }
-    .btnRow{
-      display:flex; gap:14px; justify-content:center; flex-wrap:wrap;
-      margin-top: 10px;
+
+    h1{
+      margin:0 0 8px 0;
+      font-size:clamp(26px,4vw,40px);
+      letter-spacing:-0.02em;
     }
-    button{
-      width: var(--btnW); height: var(--btnH);
-      border-radius: 999px; border:0; cursor:pointer;
-      font-size: 18px; font-weight: 700;
-      box-shadow: 0 10px 22px rgba(0,0,0,.10);
-      transition: transform .12s ease, filter .12s ease;
+
+    p{
+      margin:0 0 14px 0;
+      opacity:0.9;
+      font-size:16px;
+      line-height:1.4;
+    }
+
+    /* Gallery */
+    .gallery{
+      display:flex;
+      gap:14px;
+      margin:14px 0 18px 0;
+      justify-content:center;
+      flex-wrap:wrap;
+    }
+
+    .gallery img{
+      width:260px;       /* make bigger/smaller here */
+      height:260px;      /* make bigger/smaller here */
+      object-fit:cover;
+      border-radius:18px;
+      box-shadow:0 10px 18px rgba(0,0,0,0.12);
+    }
+
+    /* Button stage */
+    .stage{
+      position:relative;
+      height:260px;
+      border-radius:18px;
+      background:rgba(255,255,255,0.55);
+      overflow:hidden;
+      border:1px solid rgba(0,0,0,0.06);
+    }
+
+    .btn{
+      appearance:none;
+      border:0;
+      border-radius:999px;
+      padding:14px 20px;
+      font-size:18px;
+      font-weight:800;
+      cursor:pointer;
+      box-shadow:0 10px 18px rgba(0,0,0,0.12);
+      transition:transform 120ms ease, filter 120ms ease;
       user-select:none;
+      touch-action:manipulation;
+      position:absolute;  /* required for moving No button */
     }
-    button:active{ transform: scale(.98); }
-    #yesBtn{ background: #ff4d88; color:white; }
-    #yesBtn:hover{ filter: brightness(1.05); transform: translateY(-1px); }
+
+    .btn:active{ transform:scale(0.98); }
+    .btn:hover{ filter:brightness(1.02); }
+
+    #yesBtn{
+      background:var(--yes);
+      color:#fff;
+      left:18%;
+      top:55%;
+      transform:translate(-50%,-50%);
+    }
+
     #noBtn{
-      background: #2b2b2b; color: #fff;
-      position: fixed; /* so it can run away anywhere */
-      left: 50%; top: 50%;
-      transform: translate(-50%, 80px);
+      background:var(--no);
+      color:#fff;
+      left:72%;
+      top:55%;
+      transform:translate(-50%,-50%);
     }
-    .memeWrap{
+
+    .result{
+      margin-top:14px;
+      font-size:18px;
+      font-weight:750;
+      min-height:28px;
+    }
+
+    .hint{
+      margin-top:8px;
+      font-size:13px;
+      opacity:0.7;
+    }
+
+    /* Hearts overlay */
+    .hearts{
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      overflow:hidden;
+      border-radius:22px;
+    }
+
+    .heart{
+      position:absolute;
+      font-size:18px;
+      opacity:0.85;
+      animation:floatUp 2.6s ease-in forwards;
+      filter: drop-shadow(0 6px 8px rgba(0,0,0,0.15));
+    }
+
+    @keyframes floatUp{
+      0%{ transform:translateY(12px) scale(0.9); opacity:0; }
+      15%{ opacity:0.9; }
+      100%{ transform:translateY(-220px) scale(1.25); opacity:0; }
+    }
+
+    /* Big photo shown after Yes */
+    .yes-photo{
       display:none;
-      margin-top: 16px;
-      text-align:center;
-    }
-    .meme{
-      width:min(520px, 92%);
-      border-radius: 18px;
-      border: 1px solid #ffd1e1;
-      box-shadow: 0 12px 30px rgba(0,0,0,.12);
-    }
-    .small{
-      margin-top: 14px;
-      font-size: 14px;
-      opacity: .7;
-    }
-    .gallery {
-    display: flex;
-    gap: 12px;
-    margin: 12px 0 18px 0;
-    justify-content: center;
-    flex-wrap: wrap;
-    }
-    .gallery img {
-    width: 300px;
-    height: 300px;
-    object-fit: cover;
-    border-radius: 18px;
-    box-shadow: 0 10px 18px rgba(0,0,0,0.12);
-    }
-    .yes-photo {
-    display: none;
-    width: 100%;
-    max-height: 380px;
-    object-fit: cover;
-    border-radius: 18px;
-    margin-top: 14px;
-    box-shadow: 0 10px 18px rgba(0,0,0,0.12);
+      width:100%;
+      max-height:420px;
+      object-fit:cover;
+      border-radius:18px;
+      margin-top:14px;
+      box-shadow:0 10px 18px rgba(0,0,0,0.12);
     }
   </style>
 </head>
+
 <body>
-  <div class="card" id="card">
-    <div id="questionView">
-      <h1>Will you be my Valentine? 💘</h1>
-      <p>Choose wisely. (No pressure. Except… a little.)</p>
-    <div class="gallery">
-      <img src="IMG_1912.jpeg" alt="Us">
-      <img src="IMG_1981.jpeg" alt="Us">
-      <img src="IMG_8420.jpeg" alt="Us">
-    </div>
-      <div class="btnRow">
-        <button id="yesBtn">Yes</button>
-      </div>
+  <div class="card">
+    <div class="hearts" id="hearts"></div>
 
-      <div class="small">Try clicking “No” if you dare.</div>
+    <h1>Will you be my Valentine? 💘</h1>
+    <p>I have one very important question for you.</p>
+
+    <!-- Startup gallery (3 images) -->
+    <!-- Put these files in the SAME folder as index.html, or update the src paths. -->
+    <div class="gallery" id="gallery">
+      <img src="./IMG_1912.jpeg" alt="Us 1">
+      <img src="./IMG_1981.jpeg" alt="Us 2">
+      <img src="./IMG_8420.jpeg" alt="Us 3">
     </div>
 
-    <div class="memeWrap" id="yesView" aria-hidden="true">
-      <h1>LET’S GOOOOOOOO 😭❤️</h1>
-      <p>I’m officially the luckiest person alive.</p>
-      <img id="yesPhoto" class="yes-photo" src="./IMG_9103.jpeg" alt="Us">
-      
-      <!-- Option A: use a local meme image by adding it to the repo and naming it meme.jpg -->
-      <!-- <img class="meme" src="meme.jpg" alt="Happy meme" /> -->
-
-      <!-- Option B: use a GIF link (replace with your favorite) -->
-      <img class="meme"
-           src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExbHU5bmV2bWtuZzRhcTNrcGRxb3dvM2Frcnk3dDBja2VlajVienRtcyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/14xevsb9mhsqmk/giphy.gif"
-           alt="Happy dance meme" />
-
-      <p class="small">Now him the yours.</p>
+    <!-- Button area -->
+    <div class="stage" id="stage" aria-label="Button area">
+      <button class="btn" id="yesBtn" type="button">Yes 💖</button>
+      <button class="btn" id="noBtn" type="button">No 🙅🏽‍♂️</button>
     </div>
+
+    <div class="result" id="result"></div>
+
+    <!-- Big photo that shows after Yes -->
+    <img id="yesPhoto" class="yes-photo" src="./IMG_9103.jpeg" alt="Us after yes">
+
+    <div class="hint">Tip: “No” will try to escape. “Yes” makes it official.</div>
   </div>
 
-  <button id="noBtn" aria-label="No button">No ☹️</button>
-
   <script>
-  const stage = document.getElementById("stage");
-  const noBtn = document.getElementById("noBtn");
+    // ===== Grab elements =====
+    const stage  = document.getElementById("stage");
+    const noBtn  = document.getElementById("noBtn");
+    const yesBtn = document.getElementById("yesBtn");
+    const result = document.getElementById("result");
+    const hearts = document.getElementById("hearts");
+    const gallery = document.getElementById("gallery");
+    const yesPhoto = document.getElementById("yesPhoto");
 
-  if (!stage || !noBtn) {
-    console.error("Missing #stage or #noBtn in HTML.");
-  } else {
+    // Hard requirements:
+    // - .stage must be position: relative
+    // - .btn must be position: absolute
+    // - elements must keep ids: stage, yesBtn, noBtn
+
+    // ===== Helpers =====
     const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
-    function stageRect() { return stage.getBoundingClientRect(); }
+    function stageRect() {
+      return stage.getBoundingClientRect();
+    }
 
-    function getCenterInStage() {
+    function noCenterInStage() {
       const s = stageRect();
       const b = noBtn.getBoundingClientRect();
       return {
@@ -143,11 +221,12 @@
       };
     }
 
-    function place(x, y) {
+    function placeNoButton(x, y) {
       const s = stageRect();
       const bw = noBtn.offsetWidth;
       const bh = noBtn.offsetHeight;
 
+      // Keep fully inside stage
       const nx = clamp(x, bw/2 + 10, s.width  - bw/2 - 10);
       const ny = clamp(y, bh/2 + 10, s.height - bh/2 - 10);
 
@@ -156,54 +235,111 @@
       noBtn.style.transform = "translate(-50%, -50%)";
     }
 
+    // Smooth runaway (doesn't "teleport" off the stage)
     function runAway(clientX, clientY) {
       const s = stageRect();
       const px = clientX - s.left;
       const py = clientY - s.top;
 
-      const c = getCenterInStage();
+      const c = noCenterInStage();
+
+      // Vector away from pointer
       let dx = c.x - px;
       let dy = c.y - py;
-
       const len = Math.hypot(dx, dy) || 1;
       dx /= len; dy /= len;
 
-      const step = 45;      // movement amount
-      place(c.x + dx * step, c.y + dy * step);
+      // Tuning knobs (less drastic)
+      const step = 55;        // movement amount
+      const newX = c.x + dx * step;
+      const newY = c.y + dy * step;
+
+      placeNoButton(newX, newY);
     }
 
-    function onMove(e) {
+    function onPointerMove(clientX, clientY) {
       const s = stageRect();
-      const px = e.clientX - s.left;
-      const py = e.clientY - s.top;
+      const px = clientX - s.left;
+      const py = clientY - s.top;
+
+      // Only react if pointer is inside stage
       if (px < 0 || py < 0 || px > s.width || py > s.height) return;
 
-      const c = getCenterInStage();
+      const c = noCenterInStage();
       const dist = Math.hypot(px - c.x, py - c.y);
 
-      const threshold = 60; // trigger distance
-      if (dist < threshold) runAway(e.clientX, e.clientY);
+      // Tuning knob (how close before it runs)
+      const threshold = 85;
+
+      if (dist < threshold) runAway(clientX, clientY);
     }
 
-    stage.addEventListener("mousemove", onMove);
-    stage.addEventListener("touchmove", (e) => {
-      const t = e.touches && e.touches[0];
-      if (!t) return;
-      e.preventDefault();
-      onMove({ clientX: t.clientX, clientY: t.clientY });
-    }, { passive: false });
+    // Hearts effect
+    function spawnHeart() {
+      const el = document.createElement("div");
+      el.className = "heart";
+      el.textContent = Math.random() < 0.5 ? "💖" : "💘";
+      el.style.left = (Math.random() * 90 + 5) + "%";
+      el.style.bottom = "12px";
+      hearts.appendChild(el);
+      setTimeout(() => el.remove(), 2600);
+    }
 
-    // initial position
-    window.addEventListener("load", () => {
-      const s = stageRect();
-      place(s.width * 0.72, s.height * 0.55);
-    });
+    // YES behavior
+    function onYesClick() {
+      if (result) {
+        result.textContent = "She said YES! 💞 I'm officially the luckiest person alive.";
+      }
 
-    window.addEventListener("resize", () => {
-      const c = getCenterInStage();
-      place(c.x, c.y);
-    });
-  }
+      for (let i = 0; i < 14; i++) setTimeout(spawnHeart, i * 90);
+
+      // Hide No, hide gallery, show big photo
+      if (noBtn) noBtn.style.display = "none";
+      if (gallery) gallery.style.display = "none";
+      if (yesPhoto) yesPhoto.style.display = "block";
+
+      // Center Yes button
+      yesBtn.style.left = "50%";
+      yesBtn.style.top  = "55%";
+    }
+
+    // ===== Wire events (only if elements exist) =====
+    if (stage && noBtn && yesBtn) {
+      // Mouse move
+      stage.addEventListener("mousemove", (e) => onPointerMove(e.clientX, e.clientY));
+
+      // Touch move
+      stage.addEventListener("touchmove", (e) => {
+        const t = e.touches && e.touches[0];
+        if (!t) return;
+        e.preventDefault();
+        onPointerMove(t.clientX, t.clientY);
+      }, { passive: false });
+
+      // Prevent tapping No on mobile
+      noBtn.addEventListener("touchstart", (e) => {
+        const t = e.touches && e.touches[0];
+        if (t) runAway(t.clientX, t.clientY);
+        e.preventDefault();
+      }, { passive: false });
+
+      // Yes click
+      yesBtn.addEventListener("click", onYesClick);
+
+      // Initial position (in bounds)
+      window.addEventListener("load", () => {
+        const s = stageRect();
+        placeNoButton(s.width * 0.72, s.height * 0.55);
+      });
+
+      // Keep in bounds on resize
+      window.addEventListener("resize", () => {
+        const c = noCenterInStage();
+        placeNoButton(c.x, c.y);
+      });
+    } else {
+      console.error("Required elements missing. Check ids: stage, yesBtn, noBtn.");
+    }
   </script>
 </body>
 </html>
