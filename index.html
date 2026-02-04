@@ -158,6 +158,16 @@
       margin-top:14px;
       box-shadow:0 10px 18px rgba(0,0,0,0.12);
     }
+    /* GIF shown after Yes */
+  .yes-gif{
+  display:none;
+  width:100%;
+  max-height:320px;
+  object-fit:cover;
+  border-radius:18px;
+  margin-top:14px;
+  box-shadow:0 10px 18px rgba(0,0,0,0.12);
+}
   </style>
 </head>
 
@@ -186,7 +196,8 @@
 
     <!-- Big photo that shows after Yes -->
     <img id="yesPhoto" class="yes-photo" src="./IMG_9103.jpeg" alt="Us after yes">
-
+    <img id="yesGif" class="yes-gif" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExYjNuYzB1bzN0ZHVubGhkYWsycWRwMjRuOTdzODIzYTk0eGZmcDIxciZlcD12MV9naWZzX3NlYXJjaCZjdD1n/tuQLXem8ycSP3SRsnw/giphy.gif" alt="gif">
+    
     <div class="hint">Tip: “No” will try to escape. “Yes” makes it official.</div>
   </div>
 
@@ -328,7 +339,8 @@
       noBtn.style.display = "none";
       if (gallery) gallery.style.display = "none";
       if (yesPhoto) yesPhoto.style.display = "block";
-
+      document.getElementById("yesGif").style.display = "block";
+      
       yesBtn.style.left = "50%";
       yesBtn.style.top  = "55%";
     });
