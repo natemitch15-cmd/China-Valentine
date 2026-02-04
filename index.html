@@ -124,129 +124,86 @@
   <button id="noBtn" aria-label="No button">No ☹️</button>
 
   <script>
-  const stage  = document.getElementById("stage");
-  const noBtn  = document.getElementById("noBtn");
-  const yesBtn = document.getElementById("yesBtn");
-  const result = document.getElementById("result");
-  const hearts = document.getElementById("hearts");
+  const stage = document.getElementById("stage");
+  const noBtn = document.getElementById("noBtn");
 
-  function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+  if (!stage || !noBtn) {
+    console.error("Missing #stage or #noBtn in HTML.");
+  } else {
+    const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
-  function stageRect() { return stage.getBoundingClientRect(); }
+    function stageRect() { return stage.getBoundingClientRect(); }
 
-  function getNoBtnCenterInStage() {
-    const s = stageRect();
-    const b = noBtn.getBoundingClientRect();
-    return {
-      x: (b.left + b.width / 2) - s.left,
-      y: (b.top  + b.height / 2) - s.top
-    };
+    function getCenterInStage() {
+      const s = stageRect();
+      const b = noBtn.getBoundingClientRect();
+      return {
+        x: (b.left + b.width / 2) - s.left,
+        y: (b.top  + b.height / 2) - s.top
+      };
+    }
+
+    function place(x, y) {
+      const s = stageRect();
+      const bw = noBtn.offsetWidth;
+      const bh = noBtn.offsetHeight;
+
+      const nx = clamp(x, bw/2 + 10, s.width  - bw/2 - 10);
+      const ny = clamp(y, bh/2 + 10, s.height - bh/2 - 10);
+
+      noBtn.style.left = nx + "px";
+      noBtn.style.top  = ny + "px";
+      noBtn.style.transform = "translate(-50%, -50%)";
+    }
+
+    function runAway(clientX, clientY) {
+      const s = stageRect();
+      const px = clientX - s.left;
+      const py = clientY - s.top;
+
+      const c = getCenterInStage();
+      let dx = c.x - px;
+      let dy = c.y - py;
+
+      const len = Math.hypot(dx, dy) || 1;
+      dx /= len; dy /= len;
+
+      const step = 45;      // movement amount
+      place(c.x + dx * step, c.y + dy * step);
+    }
+
+    function onMove(e) {
+      const s = stageRect();
+      const px = e.clientX - s.left;
+      const py = e.clientY - s.top;
+      if (px < 0 || py < 0 || px > s.width || py > s.height) return;
+
+      const c = getCenterInStage();
+      const dist = Math.hypot(px - c.x, py - c.y);
+
+      const threshold = 60; // trigger distance
+      if (dist < threshold) runAway(e.clientX, e.clientY);
+    }
+
+    stage.addEventListener("mousemove", onMove);
+    stage.addEventListener("touchmove", (e) => {
+      const t = e.touches && e.touches[0];
+      if (!t) return;
+      e.preventDefault();
+      onMove({ clientX: t.clientX, clientY: t.clientY });
+    }, { passive: false });
+
+    // initial position
+    window.addEventListener("load", () => {
+      const s = stageRect();
+      place(s.width * 0.72, s.height * 0.55);
+    });
+
+    window.addEventListener("resize", () => {
+      const c = getCenterInStage();
+      place(c.x, c.y);
+    });
   }
-
-  function placeNoButton(x, y) {
-    const s = stageRect();
-    const bw = noBtn.offsetWidth;
-    const bh = noBtn.offsetHeight;
-
-    const nx = clamp(x, bw / 2 + 10, s.width  - bw / 2 - 10);
-    const ny = clamp(y, bh / 2 + 10, s.height - bh / 2 - 10);
-
-    noBtn.style.left = nx + "px";
-    noBtn.style.top  = ny + "px";
-    noBtn.style.transform = "translate(-50%, -50%)";
-  }
-
-  // Smooth step-away instead of teleporting across the screen
-  function runAway(clientX, clientY) {
-    const s = stageRect();
-    const px = clientX - s.left;
-    const py = clientY - s.top;
-
-    const c = getNoBtnCenterInStage();
-
-    // Direction away from pointer
-    let dx = c.x - px;
-    let dy = c.y - py;
-
-    const len = Math.hypot(dx, dy) || 1;
-    dx /= len;
-    dy /= len;
-
-    // Smaller controlled movement so it doesn't "jump" off-screen
-    const step = 20; // reduce for less movement, increase for more
-    const newX = c.x + dx * step;
-    const newY = c.y + dy * step;
-
-    placeNoButton(newX, newY);
-  }
-
-  function onPointerMove(e) {
-    const s = stageRect();
-    const px = e.clientX - s.left;
-    const py = e.clientY - s.top;
-
-    // Ignore if pointer isn't over the stage
-    if (px < 0 || py < 0 || px > s.width || py > s.height) return;
-
-    const c = getNoBtnCenterInStage();
-    const dist = Math.hypot(px - c.x, py - c.y);
-
-    // Smaller trigger radius so it doesn't overreact
-    const threshold = 45;
-
-    // Add a tiny cooldown so it doesn't spam-run every pixel
-    if (dist < threshold) runAway(e.clientX, e.clientY);
-  }
-
-  stage.addEventListener("mousemove", onPointerMove);
-
-  stage.addEventListener("touchmove", (e) => {
-    if (!e.touches || !e.touches[0]) return;
-    e.preventDefault();
-    const t = e.touches[0];
-    onPointerMove({ clientX: t.clientX, clientY: t.clientY });
-  }, { passive: false });
-
-  // Prevent easy tap on mobile
-  noBtn.addEventListener("touchstart", (e) => {
-    const t = e.touches && e.touches[0];
-    if (t) runAway(t.clientX, t.clientY);
-    e.preventDefault();
-  }, { passive: false });
-
-  function spawnHeart() {
-    const el = document.createElement("div");
-    el.className = "heart";
-    el.textContent = Math.random() < 0.5 ? "💖" : "💘";
-    el.style.left = (Math.random() * 90 + 5) + "%";
-    el.style.bottom = "12px";
-    hearts.appendChild(el);
-    setTimeout(() => el.remove(), 2600);
-  }
-
-  yesBtn.addEventListener("click", () => {
-    result.textContent = "Yay! 💞 Date locked in.";
-    for (let i = 0; i < 14; i++) setTimeout(spawnHeart, i * 90);
-
-    noBtn.style.display = "none";
-    yesBtn.style.left = "50%";
-    yesBtn.style.top = "55%";
-
-    const yesPhoto = document.getElementById("yesPhoto");
-    if (yesPhoto) yesPhoto.style.display = "block";
-    <img id="yesPhoto" class="yes-photo" src="IMG_9103.jpeg" alt="Us">
-  });
-
-  // Set initial position safely inside the stage
-  window.addEventListener("load", () => {
-    const s = stageRect();
-    placeNoButton(s.width * 0.72, s.height * 0.55);
-  });
-
-  window.addEventListener("resize", () => {
-    const c = getNoBtnCenterInStage();
-    placeNoButton(c.x, c.y);
-  });
   </script>
 </body>
 </html>
