@@ -29,7 +29,7 @@
     }
 
     .card{
-      width:min(760px, 92vw);
+      width:min(820px, 94vw);
       padding:24px;
       border-radius:22px;
       background:var(--card);
@@ -38,6 +38,10 @@
       position:relative;
     }
 
+    /* pages */
+    .hidden{ display:none !important; }
+
+    /* title text */
     h1{
       margin:0 0 8px 0;
       font-size:clamp(26px,4vw,40px);
@@ -51,11 +55,7 @@
       line-height:1.4;
     }
 
-    /* "Pages" */
-    .page { display:block; }
-    .hidden { display:none !important; }
-
-    /* Gallery */
+    /* Gallery (Page 1) */
     .gallery{
       display:flex;
       gap:14px;
@@ -63,6 +63,7 @@
       justify-content:center;
       flex-wrap:wrap;
     }
+
     .gallery img{
       width:260px;
       height:260px;
@@ -71,7 +72,7 @@
       box-shadow:0 10px 18px rgba(0,0,0,0.12);
     }
 
-    /* Button stage */
+    /* Button stage (Page 1) */
     .stage{
       position:relative;
       height:260px;
@@ -144,10 +145,10 @@
       100%{ transform:translateY(-220px) scale(1.25); opacity:0; }
     }
 
-    /* YES page content */
+    /* Page 2 (Yes page) */
     .yes-title{
-      font-size:clamp(26px,4vw,40px);
       margin:0 0 10px 0;
+      font-size:clamp(26px,4vw,40px);
       letter-spacing:-0.02em;
     }
 
@@ -157,6 +158,7 @@
       opacity:0.9;
     }
 
+    /* Make photo smaller than GIF */
     .yes-photo{
       width:85%;
       max-height:260px;
@@ -173,9 +175,7 @@
       border-radius:18px;
       margin-top:14px;
       box-shadow:0 10px 18px rgba(0,0,0,0.12);
-      border:0;
     }
-    .hidden { display: none !important; }
   </style>
 </head>
 
@@ -184,39 +184,38 @@
     <div class="hearts" id="hearts"></div>
 
     <!-- ===================== -->
-    <!-- PAGE 1 (BEFORE YES)   -->
+    <!-- PAGE 1 (Before Yes)   -->
     <!-- ===================== -->
-    <div id="page1" class="page">
+    <div id="page1">
       <h1>Will you be my Valentine? 💘</h1>
       <p>I have one very important question for you.</p>
 
-      <!-- 3-image gallery (ROOT directory images) -->
+      <!-- 3-image gallery (ALL images are in ROOT next to index.html) -->
       <div class="gallery" id="gallery">
         <img src="./IMG_1912.jpeg" alt="Us 1">
         <img src="./IMG_1981.jpeg" alt="Us 2">
         <img src="./IMG_8420.jpeg" alt="Us 3">
       </div>
 
-      <!-- Button box -->
       <div class="stage" id="stage" aria-label="Button area">
         <button class="btn" id="yesBtn" type="button">Yes 💖</button>
         <button class="btn" id="noBtn" type="button">No 🙅🏽‍♂️</button>
       </div>
 
-      <div class="hint">Tip: “No” will try to escape.</div>
+      <div class="hint">FYI: It's impossible to tell me no.</div>
     </div>
 
     <!-- ===================== -->
-    <!-- PAGE 2 (AFTER YES)    -->
+    <!-- PAGE 2 (After Yes)    -->
     <!-- ===================== -->
-    <div id="page2" class="page hidden">
+    <div id="page2" class="hidden">
       <h2 class="yes-title">She said YES! 💞</h2>
       <p class="yes-sub">I'm officially the luckiest person alive.</p>
 
-      <!-- Your YES photo (ROOT directory) -->
+      <!-- Change this to your chosen YES photo (ROOT next to index.html) -->
       <img class="yes-photo" src="./IMG_4702.jpeg" alt="Us after yes">
 
-      <!-- Direct giphy.gif link -->
+      <!-- Paste your FULL direct GIF link here (should end in .gif or /giphy.gif) -->
       <img
         id="yesGif"
         class="yes-gif"
@@ -236,7 +235,7 @@
       const hearts = document.getElementById("hearts");
 
       if (!page1 || !page2 || !stage || !noBtn || !yesBtn) {
-        console.error("Missing required elements. Check ids: page1, page2, stage, noBtn, yesBtn.");
+        console.error("Missing required ids. Need: page1, page2, stage, noBtn, yesBtn.");
         return;
       }
 
@@ -267,6 +266,11 @@
         noBtn.style.transform = "translate(-50%, -50%)";
       }
 
+      function pointerInStage(clientX, clientY) {
+        const s = stageRect();
+        return clientX >= s.left && clientX <= s.right && clientY >= s.top && clientY <= s.bottom;
+      }
+
       function runAway(clientX, clientY) {
         const s = stageRect();
         const px = clientX - s.left;
@@ -280,13 +284,9 @@
         const len = Math.hypot(dx, dy) || 1;
         dx /= len; dy /= len;
 
-        const step = 60;      // movement amount (lower = less jumpy)
+        // movement tuning
+        const step = 60;       // smaller = less jumpy
         placeNoButton(c.x + dx * step, c.y + dy * step);
-      }
-
-      function pointerInStage(clientX, clientY) {
-        const s = stageRect();
-        return clientX >= s.left && clientX <= s.right && clientY >= s.top && clientY <= s.bottom;
       }
 
       function onPointerMove(clientX, clientY) {
@@ -299,7 +299,8 @@
         const c = noCenterInStage();
         const dist = Math.hypot(px - c.x, py - c.y);
 
-        const threshold = 110; // trigger radius
+        // trigger tuning
+        const threshold = 110;
         if (dist < threshold) runAway(clientX, clientY);
       }
 
@@ -315,15 +316,10 @@
         setTimeout(() => el.remove(), 2600);
       }
 
-      // ===== YES action: show page2 only =====
+      // ===== YES: switch to Page 2 and hide everything from Page 1 =====
       yesBtn.addEventListener("click", () => {
-        // Hide everything from page1 and show page2
         page1.classList.add("hidden");
         page2.classList.remove("hidden");
-        document.getElementById("page1").classList.add("hidden");
-        document.getElementById("page2").classList.remove("hidden");
-
-        // Hearts celebration
         for (let i = 0; i < 14; i++) setTimeout(spawnHeart, i * 90);
       });
 
@@ -355,7 +351,7 @@
         e.preventDefault();
       }, { passive: false });
 
-      // Initial position (in bounds)
+      // Initial placement (in bounds)
       window.addEventListener("load", () => {
         const s = stageRect();
         placeNoButton(s.width * 0.72, s.height * 0.55);
