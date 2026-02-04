@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Be My Valentine?</title>
-  <style>
+    <style>
     :root { --btnW: 150px; --btnH: 52px; }
     body{
       margin:0; height:100vh; display:flex; align-items:center; justify-content:center;
@@ -62,6 +62,20 @@
       font-size: 14px;
       opacity: .7;
     }
+    .gallery {
+    display: flex;
+    gap: 12px;
+    margin: 12px 0 18px 0;
+    justify-content: center;
+    flex-wrap: wrap;
+    }
+    .gallery img {
+    width: 160px;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 18px;
+    box-shadow: 0 10px 18px rgba(0,0,0,0.12);
+    }
   </style>
 </head>
 <body>
@@ -69,7 +83,11 @@
     <div id="questionView">
       <h1>Will you be my Valentine? 💘</h1>
       <p>Choose wisely. (No pressure. Except… a little.)</p>
-
+    <div class="gallery">
+      <img src="images/photo1.jpg" alt="Us 1">
+      <img src="images/photo2.jpg" alt="Us 2">
+      <img src="images/photo3.jpg" alt="Us 3">
+    </div>
       <div class="btnRow">
         <button id="yesBtn">Yes</button>
       </div>
