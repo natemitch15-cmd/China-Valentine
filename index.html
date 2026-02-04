@@ -175,6 +175,7 @@
       box-shadow:0 10px 18px rgba(0,0,0,0.12);
       border:0;
     }
+    .hidden { display: none !important; }
   </style>
 </head>
 
@@ -182,18 +183,21 @@
   <div class="card">
     <div class="hearts" id="hearts"></div>
 
-    <!-- PAGE 1 (Question page) -->
+    <!-- ===================== -->
+    <!-- PAGE 1 (BEFORE YES)   -->
+    <!-- ===================== -->
     <div id="page1" class="page">
       <h1>Will you be my Valentine? 💘</h1>
       <p>I have one very important question for you.</p>
 
-      <!-- Images in ROOT -->
+      <!-- 3-image gallery (ROOT directory images) -->
       <div class="gallery" id="gallery">
-        <img src="./IMG_1912.jpeg" alt="Us 1">
-        <img src="./IMG_1918.jpeg" alt="Us 2">
-        <img src="./IMG_8420.jpeg" alt="Us 3">
+        <img src="./IMG_9103.jpeg" alt="Us 1">
+        <img src="./IMG_0665.jpeg" alt="Us 2">
+        <img src="./IMG_1912.jpeg" alt="Us 3">
       </div>
 
+      <!-- Button box -->
       <div class="stage" id="stage" aria-label="Button area">
         <button class="btn" id="yesBtn" type="button">Yes 💖</button>
         <button class="btn" id="noBtn" type="button">No 🙅🏽‍♂️</button>
@@ -202,17 +206,23 @@
       <div class="hint">Tip: “No” will try to escape.</div>
     </div>
 
-    <!-- PAGE 2 (Yes page) -->
+    <!-- ===================== -->
+    <!-- PAGE 2 (AFTER YES)    -->
+    <!-- ===================== -->
     <div id="page2" class="page hidden">
       <h2 class="yes-title">She said YES! 💞</h2>
       <p class="yes-sub">I'm officially the luckiest person alive.</p>
 
-      <!-- Big photo (ROOT) -->
-      <img class="yes-photo" src="./IMG_XXXX.jpeg" alt="Us after yes">
+      <!-- Your YES photo (ROOT directory) -->
+      <img class="yes-photo" src="./IMG_1981.jpeg" alt="Us after yes">
 
-      <!-- GIF (use a direct .gif link ending with /giphy.gif) -->
-      <!-- Replace the src below with your direct giphy.gif link -->
-      <img id="yesGif" class="yes-gif" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExYjNuYzB1bzN0ZHVubGhkYWsycWRwMjRuOTdzODIzYTk0eGZmcDIxciZlcD12MV9naWZzX3NlYXJjaCZjdD1n/tuQLXem8ycSP3SRsnw/giphy.gif" alt="Celebration gif">
+      <!-- Direct giphy.gif link -->
+      <img
+        id="yesGif"
+        class="yes-gif"
+        src="PASTE_YOUR_GIPHY_GIF_LINK_HERE"
+        alt="Celebration gif"
+      >
     </div>
   </div>
 
@@ -310,6 +320,8 @@
         // Hide everything from page1 and show page2
         page1.classList.add("hidden");
         page2.classList.remove("hidden");
+        document.getElementById("page1").classList.add("hidden");
+        document.getElementById("page2").classList.remove("hidden");
 
         // Hearts celebration
         for (let i = 0; i < 14; i++) setTimeout(spawnHeart, i * 90);
