@@ -159,14 +159,17 @@
       box-shadow:0 10px 18px rgba(0,0,0,0.12);
     }
     /* GIF shown after Yes */
- .yes-gif{
-    display:none;
-    width:100%;
-    height:auto;
-    border-radius:18px;
-    margin-top:14px;
-    box-shadow:0 10px 18px rgba(0,0,0,0.12);
-  }
+   .yes-gif{
+      display:none;
+      width:100%;
+      height:auto;
+      border-radius:18px;
+      margin-top:14px;
+      box-shadow:0 10px 18px rgba(0,0,0,0.12);
+    }
+        .hidden {
+      display: none !important;
+    }
   </style>
 </head>
 
@@ -332,22 +335,32 @@
 
     // Yes click
     yesBtn.addEventListener("click", () => {
-      if (result) {
-        result.textContent = "She said YES! 💞 I'm officially the luckiest person alive.";
-      }
+      // CONFIRM the handler is firing (remove later if you want)
+      console.log("YES clicked");
     
-      // HIDE the entire button area box
-      stage.style.display = "none";
+      // Hide the entire stage "box" + both buttons no matter what
+      const stageEl = document.getElementById("stage");
+      const yesEl   = document.getElementById("yesBtn");
+      const noEl    = document.getElementById("noBtn");
     
-      // hide startup gallery
-      if (gallery) gallery.style.display = "none";
+      if (stageEl) stageEl.classList.add("hidden");
+      if (yesEl)   yesEl.classList.add("hidden");
+      if (noEl)    noEl.classList.add("hidden");
     
-      // show big photo + gif
-      const yesPhoto = document.getElementById("yesPhoto");
-      if (yesPhoto) yesPhoto.style.display = "block";
+      // Hide the startup gallery
+      const galleryEl = document.getElementById("gallery");
+      if (galleryEl) galleryEl.classList.add("hidden");
     
-      const yesGif = document.getElementById("yesGif");
-      if (yesGif) yesGif.style.display = "block";
+      // Set the message
+      const resultEl = document.getElementById("result");
+      if (resultEl) resultEl.textContent = "She said YES! 💞 I'm officially the luckiest person alive.";
+    
+      // Show photo + gif
+      const yesPhotoEl = document.getElementById("yesPhoto");
+      const yesGifEl   = document.getElementById("yesGif");
+    
+      if (yesPhotoEl) yesPhotoEl.style.display = "block";
+      if (yesGifEl)   yesGifEl.style.display = "block";
     });
 
     // Initial placement (in bounds) + keep in bounds on resize
