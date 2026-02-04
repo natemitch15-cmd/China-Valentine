@@ -190,26 +190,42 @@
     <div class="hint">Tip: “No” will try to escape. “Yes” makes it official.</div>
   </div>
 
-  <script>
-    // ===== Grab elements =====
-    const stage  = document.getElementById("stage");
-    const noBtn  = document.getElementById("noBtn");
-    const yesBtn = document.getElementById("yesBtn");
-    const result = document.getElementById("result");
-    const hearts = document.getElementById("hearts");
+<script>
+  // Required IDs in HTML:
+  // #stage, #yesBtn, #noBtn, #result, #hearts, #gallery, #yesPhoto
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const stage   = document.getElementById("stage");
+    const noBtn   = document.getElementById("noBtn");
+    const yesBtn  = document.getElementById("yesBtn");
+    const result  = document.getElementById("result");
+    const hearts  = document.getElementById("hearts");
     const gallery = document.getElementById("gallery");
     const yesPhoto = document.getElementById("yesPhoto");
 
-    // Hard requirements:
-    // - .stage must be position: relative
-    // - .btn must be position: absolute
-    // - elements must keep ids: stage, yesBtn, noBtn
+    if (!stage || !noBtn || !yesBtn) {
+      console.error("Missing #stage, #noBtn, or #yesBtn. Check your HTML ids.");
+      return;
+    }
 
-    // ===== Helpers =====
     const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
     function stageRect() {
       return stage.getBoundingClientRect();
+    }
+
+    function placeNoButton(x, y) {
+      const s = stageRect();
+      const bw = noBtn.offsetWidth;
+      const bh = noBtn.offsetHeight;
+
+      // Keep the button fully inside the stage
+      const nx = clamp(x, bw / 2 + 10, s.width  - bw / 2 - 10);
+      const ny = clamp(y, bh / 2 + 10, s.height - bh / 2 - 10);
+
+      noBtn.style.left = nx + "px";
+      noBtn.style.top  = ny + "px";
+      noBtn.style.transform = "translate(-50%, -50%)";
     }
 
     function noCenterInStage() {
@@ -221,21 +237,16 @@
       };
     }
 
-    function placeNoButton(x, y) {
+    function pointerInStage(clientX, clientY) {
       const s = stageRect();
-      const bw = noBtn.offsetWidth;
-      const bh = noBtn.offsetHeight;
-
-      // Keep fully inside stage
-      const nx = clamp(x, bw/2 + 10, s.width  - bw/2 - 10);
-      const ny = clamp(y, bh/2 + 10, s.height - bh/2 - 10);
-
-      noBtn.style.left = nx + "px";
-      noBtn.style.top  = ny + "px";
-      noBtn.style.transform = "translate(-50%, -50%)";
+      return (
+        clientX >= s.left &&
+        clientX <= s.right &&
+        clientY >= s.top &&
+        clientY <= s.bottom
+      );
     }
 
-    // Smooth runaway (doesn't "teleport" off the stage)
     function runAway(clientX, clientY) {
       const s = stageRect();
       const px = clientX - s.left;
@@ -243,39 +254,63 @@
 
       const c = noCenterInStage();
 
-      // Vector away from pointer
+      // vector away from pointer
       let dx = c.x - px;
       let dy = c.y - py;
       const len = Math.hypot(dx, dy) || 1;
       dx /= len; dy /= len;
 
-      // Tuning knobs (less drastic)
-      const step = 55;        // movement amount
-      const newX = c.x + dx * step;
-      const newY = c.y + dy * step;
-
-      placeNoButton(newX, newY);
+      // Tuning knobs:
+      const step = 60;      // how far it moves each time (lower = less jumpy)
+      placeNoButton(c.x + dx * step, c.y + dy * step);
     }
 
-    function onPointerMove(clientX, clientY) {
+    // ---- Movement detection (document-level; only acts if pointer is over stage)
+    let rafPending = false;
+    let lastX = 0, lastY = 0;
+
+    function handleMove(clientX, clientY) {
+      if (!pointerInStage(clientX, clientY)) return;
+
       const s = stageRect();
       const px = clientX - s.left;
       const py = clientY - s.top;
 
-      // Only react if pointer is inside stage
-      if (px < 0 || py < 0 || px > s.width || py > s.height) return;
-
       const c = noCenterInStage();
       const dist = Math.hypot(px - c.x, py - c.y);
 
-      // Tuning knob (how close before it runs)
-      const threshold = 85;
-
+      const threshold = 110; // increase if it feels too easy to catch
       if (dist < threshold) runAway(clientX, clientY);
     }
 
+    document.addEventListener("mousemove", (e) => {
+      lastX = e.clientX; lastY = e.clientY;
+      if (rafPending) return;
+      rafPending = true;
+      requestAnimationFrame(() => {
+        rafPending = false;
+        handleMove(lastX, lastY);
+      });
+    });
+
+    document.addEventListener("touchmove", (e) => {
+      const t = e.touches && e.touches[0];
+      if (!t) return;
+      // prevent scrolling while interacting in the stage area
+      if (pointerInStage(t.clientX, t.clientY)) e.preventDefault();
+      handleMove(t.clientX, t.clientY);
+    }, { passive: false });
+
+    // Prevent a successful tap on mobile
+    noBtn.addEventListener("touchstart", (e) => {
+      const t = e.touches && e.touches[0];
+      if (t) runAway(t.clientX, t.clientY);
+      e.preventDefault();
+    }, { passive: false });
+
     // Hearts effect
     function spawnHeart() {
+      if (!hearts) return;
       const el = document.createElement("div");
       el.className = "heart";
       el.textContent = Math.random() < 0.5 ? "💖" : "💘";
@@ -285,61 +320,31 @@
       setTimeout(() => el.remove(), 2600);
     }
 
-    // YES behavior
-    function onYesClick() {
-      if (result) {
-        result.textContent = "She said YES! 💞 I'm officially the luckiest person alive.";
-      }
-
+    // Yes click
+    yesBtn.addEventListener("click", () => {
+      if (result) result.textContent = "She said YES! 💞 I'm officially the luckiest person alive.";
       for (let i = 0; i < 14; i++) setTimeout(spawnHeart, i * 90);
 
-      // Hide No, hide gallery, show big photo
-      if (noBtn) noBtn.style.display = "none";
+      noBtn.style.display = "none";
       if (gallery) gallery.style.display = "none";
       if (yesPhoto) yesPhoto.style.display = "block";
 
-      // Center Yes button
       yesBtn.style.left = "50%";
       yesBtn.style.top  = "55%";
+    });
+
+    // Initial placement (in bounds) + keep in bounds on resize
+    function initPosition() {
+      const s = stageRect();
+      placeNoButton(s.width * 0.72, s.height * 0.55);
     }
 
-    // ===== Wire events (only if elements exist) =====
-    if (stage && noBtn && yesBtn) {
-      // Mouse move
-      stage.addEventListener("mousemove", (e) => onPointerMove(e.clientX, e.clientY));
-
-      // Touch move
-      stage.addEventListener("touchmove", (e) => {
-        const t = e.touches && e.touches[0];
-        if (!t) return;
-        e.preventDefault();
-        onPointerMove(t.clientX, t.clientY);
-      }, { passive: false });
-
-      // Prevent tapping No on mobile
-      noBtn.addEventListener("touchstart", (e) => {
-        const t = e.touches && e.touches[0];
-        if (t) runAway(t.clientX, t.clientY);
-        e.preventDefault();
-      }, { passive: false });
-
-      // Yes click
-      yesBtn.addEventListener("click", onYesClick);
-
-      // Initial position (in bounds)
-      window.addEventListener("load", () => {
-        const s = stageRect();
-        placeNoButton(s.width * 0.72, s.height * 0.55);
-      });
-
-      // Keep in bounds on resize
-      window.addEventListener("resize", () => {
-        const c = noCenterInStage();
-        placeNoButton(c.x, c.y);
-      });
-    } else {
-      console.error("Required elements missing. Check ids: stage, yesBtn, noBtn.");
-    }
-  </script>
+    initPosition();
+    window.addEventListener("resize", () => {
+      const c = noCenterInStage();
+      placeNoButton(c.x, c.y);
+    });
+  });
+</script>
 </body>
 </html>
