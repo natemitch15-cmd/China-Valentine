@@ -332,25 +332,22 @@
 
     // Yes click
     yesBtn.addEventListener("click", () => {
-    // message
-    if (result) {
-      result.textContent = "She said YES! 💞 I'm officially the luckiest person alive.";
-    }
-  
-    // hide the buttons area
-    if (noBtn) noBtn.style.display = "none";
-    if (yesBtn) yesBtn.style.display = "none";
-  
-    // hide gallery (startup pictures)
-    if (gallery) gallery.style.display = "none";
-  
-    // show big photo
-    const yesPhoto = document.getElementById("yesPhoto");
-    if (yesPhoto) yesPhoto.style.display = "block";
-  
-    // show gif
-    const yesGif = document.getElementById("yesGif");
-    if (yesGif) yesGif.style.display = "block";
+      if (result) {
+        result.textContent = "She said YES! 💞 I'm officially the luckiest person alive.";
+      }
+    
+      // HIDE the entire button area box
+      stage.style.display = "none";
+    
+      // hide startup gallery
+      if (gallery) gallery.style.display = "none";
+    
+      // show big photo + gif
+      const yesPhoto = document.getElementById("yesPhoto");
+      if (yesPhoto) yesPhoto.style.display = "block";
+    
+      const yesGif = document.getElementById("yesGif");
+      if (yesGif) yesGif.style.display = "block";
     });
 
     // Initial placement (in bounds) + keep in bounds on resize
