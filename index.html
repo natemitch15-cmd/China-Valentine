@@ -11,6 +11,8 @@
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background: radial-gradient(circle at top, #ffe6f0, #fff);
       overflow:hidden;
+      <p>Image test:</p>
+      <img src="./IMG_9103.jpeg" style="width:300px;border:2px solid red" alt="test">
     }
     .card{
       width:min(720px, 92vw);
@@ -93,9 +95,9 @@
       <h1>Will you be my Valentine? 💘</h1>
       <p>Choose wisely. (No pressure. Except… a little.)</p>
     <div class="gallery">
-      <img src="IMG_1912.jpg" alt="Us">
-      <img src="IMG_1981.jpg" alt="Us">
-      <img src="IMG_8420.jpg" alt="Us">
+      <img src="./IMG_1912.jpg" alt="Us">
+      <img src="./IMG_1981.jpg" alt="Us">
+      <img src="./IMG_8420.jpg" alt="Us">
     </div>
       <div class="btnRow">
         <button id="yesBtn">Yes</button>
@@ -107,7 +109,7 @@
     <div class="memeWrap" id="yesView" aria-hidden="true">
       <h1>LET’S GOOOOOOOO 😭❤️</h1>
       <p>I’m officially the luckiest person alive.</p>
-      <img id="yesPhoto" class="yes-photo" src="IMG_9103.jpg" alt="Us">
+      <img id="yesPhoto" class="yes-photo" src="./IMG_9103.jpg" alt="Us">
       
       <!-- Option A: use a local meme image by adding it to the repo and naming it meme.jpg -->
       <!-- <img class="meme" src="meme.jpg" alt="Happy meme" /> -->
@@ -173,7 +175,7 @@
     dy /= len;
 
     // Smaller controlled movement so it doesn't "jump" off-screen
-    const step = 70; // reduce for less movement, increase for more
+    const step = 20; // reduce for less movement, increase for more
     const newX = c.x + dx * step;
     const newY = c.y + dy * step;
 
@@ -192,7 +194,7 @@
     const dist = Math.hypot(px - c.x, py - c.y);
 
     // Smaller trigger radius so it doesn't overreact
-    const threshold = 85;
+    const threshold = 45;
 
     // Add a tiny cooldown so it doesn't spam-run every pixel
     if (dist < threshold) runAway(e.clientX, e.clientY);
