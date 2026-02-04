@@ -93,9 +93,9 @@
       <h1>Will you be my Valentine? 💘</h1>
       <p>Choose wisely. (No pressure. Except… a little.)</p>
     <div class="gallery">
-      <img src="IMG_1912.jpg">
-      <img src="IMG_1981.jpg">
-      <img src="IMG_8420.jpg">
+      <img src="IMG_1912.jpg" alt="Us">
+      <img src="IMG_1981.jpg" alt="Us">
+      <img src="IMG_8420.jpg" alt="Us">
     </div>
       <div class="btnRow">
         <button id="yesBtn">Yes</button>
@@ -107,7 +107,7 @@
     <div class="memeWrap" id="yesView" aria-hidden="true">
       <h1>LET’S GOOOOOOOO 😭❤️</h1>
       <p>I’m officially the luckiest person alive.</p>
-      <img id="yesPhoto" class="yes-photo" src="IMG_9103.jpg">
+      <img id="yesPhoto" class="yes-photo" src="IMG_9103.jpg" alt="Us">
       
       <!-- Option A: use a local meme image by adding it to the repo and naming it meme.jpg -->
       <!-- <img class="meme" src="meme.jpg" alt="Happy meme" /> -->
@@ -124,80 +124,129 @@
   <button id="noBtn" aria-label="No button">No ☹️</button>
 
   <script>
-    const yesBtn = document.getElementById('yesBtn');
-    const noBtn  = document.getElementById('noBtn');
-    const questionView = document.getElementById('questionView');
-    const yesView = document.getElementById('yesView');
+  const stage  = document.getElementById("stage");
+  const noBtn  = document.getElementById("noBtn");
+  const yesBtn = document.getElementById("yesBtn");
+  const result = document.getElementById("result");
+  const hearts = document.getElementById("hearts");
 
-    // --- Helper: clamp
-    const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+  function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
 
-    // --- Place "No" somewhere valid on first load
-    function placeNoInitial(){
-      const pad = 16;
-      const w = noBtn.offsetWidth || 150;
-      const h = noBtn.offsetHeight || 52;
+  function stageRect() { return stage.getBoundingClientRect(); }
 
-      const x = (window.innerWidth / 2) - (w / 2);
-      const y = (window.innerHeight / 2) + 80;
+  function getNoBtnCenterInStage() {
+    const s = stageRect();
+    const b = noBtn.getBoundingClientRect();
+    return {
+      x: (b.left + b.width / 2) - s.left,
+      y: (b.top  + b.height / 2) - s.top
+    };
+  }
 
-      noBtn.style.left = clamp(x, pad, window.innerWidth - w - pad) + 'px';
-      noBtn.style.top  = clamp(y, pad, window.innerHeight - h - pad) + 'px';
-    }
+  function placeNoButton(x, y) {
+    const s = stageRect();
+    const bw = noBtn.offsetWidth;
+    const bh = noBtn.offsetHeight;
 
-    // --- Make it run away when cursor gets close
-    function runAway(mouseX, mouseY){
-      const rect = noBtn.getBoundingClientRect();
-      const btnCX = rect.left + rect.width / 2;
-      const btnCY = rect.top  + rect.height / 2;
+    const nx = clamp(x, bw / 2 + 10, s.width  - bw / 2 - 10);
+    const ny = clamp(y, bh / 2 + 10, s.height - bh / 2 - 10);
 
-      const dx = btnCX - mouseX;
-      const dy = btnCY - mouseY;
-      const dist = Math.hypot(dx, dy);
+    noBtn.style.left = nx + "px";
+    noBtn.style.top  = ny + "px";
+    noBtn.style.transform = "translate(-50%, -50%)";
+  }
 
-      const triggerDistance = 140; // how close before it flees
-      if (dist > triggerDistance) return;
+  // Smooth step-away instead of teleporting across the screen
+  function runAway(clientX, clientY) {
+    const s = stageRect();
+    const px = clientX - s.left;
+    const py = clientY - s.top;
 
-      // Move away in the opposite direction + some randomness
-      const flee = 220;
-      let nx = rect.left + (dx / (dist || 1)) * flee + (Math.random() - 0.5) * 120;
-      let ny = rect.top  + (dy / (dist || 1)) * flee + (Math.random() - 0.5) * 120;
+    const c = getNoBtnCenterInStage();
 
-      const pad = 16;
-      nx = clamp(nx, pad, window.innerWidth  - rect.width  - pad);
-      ny = clamp(ny, pad, window.innerHeight - rect.height - pad);
+    // Direction away from pointer
+    let dx = c.x - px;
+    let dy = c.y - py;
 
-      noBtn.style.left = nx + 'px';
-      noBtn.style.top  = ny + 'px';
-    }
+    const len = Math.hypot(dx, dy) || 1;
+    dx /= len;
+    dy /= len;
 
-    // Prevent clicks via touch too (it will jump on touchstart)
-    noBtn.addEventListener('mouseenter', (e) => runAway(e.clientX, e.clientY));
-    window.addEventListener('mousemove', (e) => runAway(e.clientX, e.clientY), { passive: true });
-    noBtn.addEventListener('touchstart', (e) => {
-      const t = e.touches[0];
-      runAway(t.clientX, t.clientY);
-      e.preventDefault();
-    }, { passive: false });
+    // Smaller controlled movement so it doesn't "jump" off-screen
+    const step = 70; // reduce for less movement, increase for more
+    const newX = c.x + dx * step;
+    const newY = c.y + dy * step;
 
-    // Just in case it gets clicked (keyboard, etc.), also dodge:
-    noBtn.addEventListener('click', (e) => {
-      runAway(window.innerWidth * Math.random(), window.innerHeight * Math.random());
-      e.preventDefault();
-    });
+    placeNoButton(newX, newY);
+  }
 
-    // YES click => switch the whole view
-    yesBtn.addEventListener('click', () => {
-      questionView.style.display = 'none';
-      yesView.style.display = 'block';
-      yesView.setAttribute('aria-hidden', 'false');
-      noBtn.style.display = 'none';
-      document.title = "SHE SAID YES ❤️";
-      document.getElementById("yesPhoto").style.display = "block";
-    });
+  function onPointerMove(e) {
+    const s = stageRect();
+    const px = e.clientX - s.left;
+    const py = e.clientY - s.top;
 
-    window.addEventListener('resize', placeNoInitial);
-    placeNoInitial();
+    // Ignore if pointer isn't over the stage
+    if (px < 0 || py < 0 || px > s.width || py > s.height) return;
+
+    const c = getNoBtnCenterInStage();
+    const dist = Math.hypot(px - c.x, py - c.y);
+
+    // Smaller trigger radius so it doesn't overreact
+    const threshold = 85;
+
+    // Add a tiny cooldown so it doesn't spam-run every pixel
+    if (dist < threshold) runAway(e.clientX, e.clientY);
+  }
+
+  stage.addEventListener("mousemove", onPointerMove);
+
+  stage.addEventListener("touchmove", (e) => {
+    if (!e.touches || !e.touches[0]) return;
+    e.preventDefault();
+    const t = e.touches[0];
+    onPointerMove({ clientX: t.clientX, clientY: t.clientY });
+  }, { passive: false });
+
+  // Prevent easy tap on mobile
+  noBtn.addEventListener("touchstart", (e) => {
+    const t = e.touches && e.touches[0];
+    if (t) runAway(t.clientX, t.clientY);
+    e.preventDefault();
+  }, { passive: false });
+
+  function spawnHeart() {
+    const el = document.createElement("div");
+    el.className = "heart";
+    el.textContent = Math.random() < 0.5 ? "💖" : "💘";
+    el.style.left = (Math.random() * 90 + 5) + "%";
+    el.style.bottom = "12px";
+    hearts.appendChild(el);
+    setTimeout(() => el.remove(), 2600);
+  }
+
+  yesBtn.addEventListener("click", () => {
+    result.textContent = "Yay! 💞 Date locked in.";
+    for (let i = 0; i < 14; i++) setTimeout(spawnHeart, i * 90);
+
+    noBtn.style.display = "none";
+    yesBtn.style.left = "50%";
+    yesBtn.style.top = "55%";
+
+    const yesPhoto = document.getElementById("yesPhoto");
+    if (yesPhoto) yesPhoto.style.display = "block";
+    <img id="yesPhoto" class="yes-photo" src="./IMG_9103.jpeg" alt="Us">
+  });
+
+  // Set initial position safely inside the stage
+  window.addEventListener("load", () => {
+    const s = stageRect();
+    placeNoButton(s.width * 0.72, s.height * 0.55);
+  });
+
+  window.addEventListener("resize", () => {
+    const c = getNoBtnCenterInStage();
+    placeNoButton(c.x, c.y);
+  });
   </script>
 </body>
 </html>
